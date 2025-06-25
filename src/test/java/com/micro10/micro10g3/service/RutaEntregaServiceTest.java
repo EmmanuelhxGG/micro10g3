@@ -2,9 +2,12 @@ package com.micro10.micro10g3.service;
 
 import com.micro10.micro10g3.model.RutaEntrega;
 import com.micro10.micro10g3.repository.RutaEntregaRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
@@ -18,6 +21,11 @@ public class RutaEntregaServiceTest {
 
     @InjectMocks
     private RutaEntregaService rutaEntregaService;
+
+        @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testPlanificarRuta() {

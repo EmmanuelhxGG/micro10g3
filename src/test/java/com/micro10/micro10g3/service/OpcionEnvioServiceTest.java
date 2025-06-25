@@ -3,9 +3,12 @@ package com.micro10.micro10g3.service;
 import com.micro10.micro10g3.model.OpcionEnvio;
 import com.micro10.micro10g3.model.TipoEnvio;
 import com.micro10.micro10g3.repository.OpcionEnvioRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +26,11 @@ public class OpcionEnvioServiceTest {
 
     @InjectMocks
     private OpcionEnvioService opcionEnvioService;
+
+        @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testListarTodas() {

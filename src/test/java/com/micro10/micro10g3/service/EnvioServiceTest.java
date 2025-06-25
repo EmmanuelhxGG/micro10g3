@@ -4,15 +4,19 @@ import com.micro10.micro10g3.model.*;
 import com.micro10.micro10g3.repository.EnvioRepository;
 import com.micro10.micro10g3.repository.RutaEntregaRepository;
 import com.micro10.micro10g3.repository.OpcionEnvioRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class EnvioServiceTest {
@@ -28,6 +32,11 @@ public class EnvioServiceTest {
 
     @InjectMocks
     private EnvioService envioService;
+
+        @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testGuardar() {
