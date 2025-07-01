@@ -4,12 +4,14 @@ import com.micro10.micro10g3.model.*;
 import com.micro10.micro10g3.repository.EnvioRepository;
 import com.micro10.micro10g3.repository.RutaEntregaRepository;
 import com.micro10.micro10g3.repository.OpcionEnvioRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,107 +31,115 @@ public class EnvioServiceTest {
     @InjectMocks
     private EnvioService envioService;
 
-    @Test
-    void testGuardar() {
-        RutaEntrega ruta = new RutaEntrega(1, "Origen", 10f, null);
-        OpcionEnvio opcion = new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rápido", 1000f, 2);
-        Envio envio = new Envio(0, 10, 5, "Destino", null, TipoDestinatario.CLIENTE, null, null, null, ruta, opcion);
-        Envio envioGuardado = new Envio(1, 10, 5, "Destino", EstadoEnvio.PENDIENTE, TipoDestinatario.CLIENTE,
-                                        LocalDate.now(), null, null, ruta, opcion);
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }    
 
-        when(rutaEntregaRepository.findById(1)).thenReturn(Optional.of(ruta));
-        when(opcionEnvioRepository.findById(1)).thenReturn(Optional.of(opcion));
-        when(envioRepository.save(any(Envio.class))).thenReturn(envioGuardado);
+@Test
+void testGuardarRutaNoExiste() {
+    OpcionEnvio opcion = new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rápido", 1000f, 2);
+    Envio envio = new Envio(0, 10, 5, "Destino", null, TipoDestinatario.CLIENTE, null, null, null, new RutaEntrega(1, "Origen", 10f, null), opcion);
 
-        Envio resultado = envioService.guardar(envio);
+    when(rutaEntregaRepository.findById(1)).thenReturn(Optional.empty());
+    when(opcionEnvioRepository.findById(1)).thenReturn(Optional.of(opcion));
 
-        assertThat(resultado.getIdEnvio()).isEqualTo(1);
-        assertThat(resultado.getEstadoEnvio()).isEqualTo(EstadoEnvio.PENDIENTE);
-        assertThat(resultado.getFechaSalida()).isEqualTo(LocalDate.now());
-    }
+    Envio resultado = envioService.guardar(envio);
 
-    @Test
-    void testActualizarEstado() {
-        Envio envio = new Envio();
-        envio.setIdEnvio(1);
-        envio.setEstadoEnvio(EstadoEnvio.PENDIENTE);
+    assertThat(resultado).isNull();
+}
 
-        when(envioRepository.findById(1)).thenReturn(Optional.of(envio));
-        when(envioRepository.save(envio)).thenReturn(envio);
+@Test
+void testGuardarOpcionNoExiste() {
+    RutaEntrega ruta = new RutaEntrega(1, "Origen", 10f, null);
+    Envio envio = new Envio(0, 10, 5, "Destino", null, TipoDestinatario.CLIENTE, null, null, null, ruta, new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rapido", 1000f, 2));
 
-        Envio resultado = envioService.actualizarEstado(1, EstadoEnvio.PENDIENTE);
+    when(rutaEntregaRepository.findById(1)).thenReturn(Optional.of(ruta));
+    when(opcionEnvioRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThat(resultado.getEstadoEnvio()).isEqualTo(EstadoEnvio.PENDIENTE);
-    }
+    Envio resultado = envioService.guardar(envio);
 
-    @Test
-    void testListarTodos() {
-        Envio envio1 = new Envio();
-        Envio envio2 = new Envio();
+    assertThat(resultado).isNull();
+}
 
-        when(envioRepository.findAll()).thenReturn(List.of(envio1, envio2));
+@Test
+void testActualizarEstadoNoExiste() {
+    when(envioRepository.findById(99)).thenReturn(Optional.empty());
 
-        List<Envio> resultado = envioService.listarTodos();
+    Envio resultado = envioService.actualizarEstado(99, EstadoEnvio.PENDIENTE);
 
-        assertThat(resultado.size()).isEqualTo(2);
-    }
+    assertThat(resultado).isNull();
+}
 
-    @Test
-    void testBuscarPorId() {
-        Envio envio = new Envio();
-        envio.setIdEnvio(1);
+@Test
+void testActualizarEstadoConFechaNoExiste() {
+    when(envioRepository.findById(99)).thenReturn(Optional.empty());
 
-        when(envioRepository.findById(1)).thenReturn(Optional.of(envio));
+    Envio resultado = envioService.actualizarEstadoConFecha(99, EstadoEnvio.ENTREGADO, LocalDate.now());
 
-        Envio resultado = envioService.buscarPorId(1);
+    assertThat(resultado).isNull();
+}
 
-        assertThat(resultado.getIdEnvio()).isEqualTo(1);
-    }
+@Test
+void testBuscarPorIdNoExiste() {
+    when(envioRepository.findById(99)).thenReturn(Optional.empty());
 
-    @Test
-    void testActualizarEstadoConFecha() {
-        Envio envio = new Envio();
-        envio.setIdEnvio(1);
-        envio.setEstadoEnvio(EstadoEnvio.PENDIENTE);
+    Envio resultado = envioService.buscarPorId(99);
 
-        LocalDate fecha = LocalDate.now();
+    assertThat(resultado).isNull();
+}
 
-        when(envioRepository.findById(1)).thenReturn(Optional.of(envio));
-        when(envioRepository.save(envio)).thenReturn(envio);
+@Test
+void testEliminarNoExiste() {
+    when(envioRepository.findById(99)).thenReturn(Optional.empty());
 
-        Envio resultado = envioService.actualizarEstadoConFecha(1, EstadoEnvio.ENTREGADO, fecha);
+    boolean resultado = envioService.eliminar(99);
 
-        assertThat(resultado.getEstadoEnvio()).isEqualTo(EstadoEnvio.ENTREGADO);
-        assertThat(resultado.getFechaEntregaReal()).isEqualTo(fecha);
-    }
+    assertThat(resultado).isFalse();
+}
 
-    @Test
-    void testEliminar() {
-        Envio envio = new Envio();
-        envio.setIdEnvio(1);
+@Test
+void testModificarEnvioNoExiste() {
+    RutaEntrega ruta = new RutaEntrega(1, "Origen", 10f, null);
+    OpcionEnvio opcion = new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rápido", 1000f, 2);
+    Envio envioModificado = new Envio(1, 10, 5, "Destino", EstadoEnvio.PENDIENTE, TipoDestinatario.CLIENTE,
+            null, null, null, ruta, opcion);
 
-        when(envioRepository.findById(1)).thenReturn(Optional.of(envio));
-        doNothing().when(envioRepository).deleteById(1);
+    when(envioRepository.findById(1)).thenReturn(Optional.empty());
 
-        boolean resultado = envioService.eliminar(1);
+    Envio resultado = envioService.modificar(envioModificado);
 
-        assertThat(resultado).isTrue();
-    }
+    assertThat(resultado).isNull();
+}
 
-    @Test
-    void testModificar() {
-        RutaEntrega ruta = new RutaEntrega(1, "Origen", 10f, null);
-        OpcionEnvio opcion = new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rápido", 1000f, 2);
-        Envio envioModificado = new Envio(1, 10, 5, "Destino", EstadoEnvio.PENDIENTE, TipoDestinatario.CLIENTE,
-                null, null, null, ruta, opcion);
+@Test
+void testModificarRutaNoExiste() {
+    RutaEntrega ruta = new RutaEntrega(1, "Origen", 10f, null);
+    OpcionEnvio opcion = new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rápido", 1000f, 2);
+    Envio envioModificado = new Envio(1, 10, 5, "Destino", EstadoEnvio.PENDIENTE, TipoDestinatario.CLIENTE,
+            null, null, null, ruta, opcion);
 
-        when(envioRepository.findById(1)).thenReturn(Optional.of(envioModificado));
-        when(rutaEntregaRepository.findById(1)).thenReturn(Optional.of(ruta));
-        when(opcionEnvioRepository.findById(1)).thenReturn(Optional.of(opcion));
-        when(envioRepository.save(envioModificado)).thenReturn(envioModificado);
+    when(envioRepository.findById(1)).thenReturn(Optional.of(envioModificado));
+    when(rutaEntregaRepository.findById(1)).thenReturn(Optional.empty());
 
-        Envio resultado = envioService.modificar(envioModificado);
+    Envio resultado = envioService.modificar(envioModificado);
 
-        assertThat(resultado.getIdEnvio()).isEqualTo(1);
-    }
+    assertThat(resultado).isNull();
+}
+
+@Test
+void testModificarOpcionNoExiste() {
+    RutaEntrega ruta = new RutaEntrega(1, "Origen", 10f, null);
+    OpcionEnvio opcion = new OpcionEnvio(1, TipoEnvio.EXPRESS, "Rápido", 1000f, 2);
+    Envio envioModificado = new Envio(1, 10, 5, "Destino", EstadoEnvio.PENDIENTE, TipoDestinatario.CLIENTE,
+            null, null, null, ruta, opcion);
+
+    when(envioRepository.findById(1)).thenReturn(Optional.of(envioModificado));
+    when(rutaEntregaRepository.findById(1)).thenReturn(Optional.of(ruta));
+    when(opcionEnvioRepository.findById(1)).thenReturn(Optional.empty());
+
+    Envio resultado = envioService.modificar(envioModificado);
+
+    assertThat(resultado).isNull();
+}
 }

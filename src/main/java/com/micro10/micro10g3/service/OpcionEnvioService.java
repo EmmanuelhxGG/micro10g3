@@ -16,7 +16,6 @@ public class OpcionEnvioService {
     public List<OpcionEnvio> listarTodas() {
         return opcionEnvioRepository.findAll();
     }
-    //crea una nueva opcion de envio
     public OpcionEnvio crear(OpcionEnvio opcion) {
         return opcionEnvioRepository.save(opcion);
     }

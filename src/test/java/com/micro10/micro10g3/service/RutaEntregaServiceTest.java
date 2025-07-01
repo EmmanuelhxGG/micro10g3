@@ -2,9 +2,12 @@ package com.micro10.micro10g3.service;
 
 import com.micro10.micro10g3.model.RutaEntrega;
 import com.micro10.micro10g3.repository.RutaEntregaRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
@@ -18,6 +21,11 @@ public class RutaEntregaServiceTest {
 
     @InjectMocks
     private RutaEntregaService rutaEntregaService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void testPlanificarRuta() {
@@ -33,7 +41,7 @@ public class RutaEntregaServiceTest {
     }
 
     @Test
-    void testOptimizarRuta() {
+    void testOptimizarRuta_existente() {
         RutaEntrega rutaExistente = new RutaEntrega(1, "Origen A", 10.5f, null);
         RutaEntrega rutaActualizada = new RutaEntrega(1, "Origen A", 7.0f, null);
 
@@ -48,7 +56,17 @@ public class RutaEntregaServiceTest {
     }
 
     @Test
-    void testModificarRuta() {
+    void testOptimizarRuta_noExiste() {
+        when(rutaEntregaRepository.findById(99)).thenReturn(Optional.empty());
+
+        RutaEntrega resultado = rutaEntregaService.optimizarRuta(99, 5.0f);
+
+        assertThat(resultado).isNull();
+        verify(rutaEntregaRepository).findById(99);
+    }
+
+    @Test
+    void testModificarRuta_existente() {
         RutaEntrega rutaModificada = new RutaEntrega(1, "Origen B", 15.0f, null);
 
         when(rutaEntregaRepository.findById(1)).thenReturn(Optional.of(rutaModificada));
@@ -62,7 +80,19 @@ public class RutaEntregaServiceTest {
     }
 
     @Test
-    void testEliminarRuta() {
+    void testModificarRuta_noExiste() {
+        RutaEntrega rutaModificada = new RutaEntrega(99, "Origen B", 15.0f, null);
+
+        when(rutaEntregaRepository.findById(99)).thenReturn(Optional.empty());
+
+        RutaEntrega resultado = rutaEntregaService.modificarRuta(rutaModificada);
+
+        assertThat(resultado).isNull();
+        verify(rutaEntregaRepository).findById(99);
+    }
+
+    @Test
+    void testEliminarRuta_existente() {
         RutaEntrega rutaExistente = new RutaEntrega(1, "Origen A", 10.5f, null);
 
         when(rutaEntregaRepository.findById(1)).thenReturn(Optional.of(rutaExistente));
@@ -73,5 +103,15 @@ public class RutaEntregaServiceTest {
         assertThat(resultado).isTrue();
         verify(rutaEntregaRepository).findById(1);
         verify(rutaEntregaRepository).deleteById(1);
+    }
+
+    @Test
+    void testEliminarRuta_noExiste() {
+        when(rutaEntregaRepository.findById(99)).thenReturn(Optional.empty());
+
+        boolean resultado = rutaEntregaService.eliminarRuta(99);
+
+        assertThat(resultado).isFalse();
+        verify(rutaEntregaRepository).findById(99);
     }
 }
